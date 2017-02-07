@@ -1,0 +1,47 @@
+# Python v2.7
+python -m SimpleHTTPServer
+# Python 3
+python -m http.server 8000
+
+# SMTP-Server for debugging, messages will be discarded, and printed on stdout.
+python -m smtpd -n -c DebuggingServer localhost:1025
+
+# Pretty print a json
+python -mjson.tool
+
+
+#----------------- Virtual Environment ----------#
+sudo pip install virtualenvwrapper
+sudo pip install virtualenvwrapper
+
+# set where virutal environments will live
+export WORKON_HOME=$HOME/.virtualenvs
+# ensure all new environments are isolated from the site-packages directory
+export VIRTUALENVWRAPPER_VIRTUALENV_ARGS='--no-site-packages'
+# use the same directory for virtualenvs as virtualenvwrapper
+export PIP_VIRTUALENV_BASE=$WORKON_HOME
+# makes pip detect an active virtualenv and install to it
+export PIP_RESPECT_VIRTUALENV=true
+if [[ -r /usr/local/bin/virtualenvwrapper.sh ]]; then
+    source /usr/local/bin/virtualenvwrapper.sh
+else
+    echo "WARNING: Can't find virtualenvwrapper.sh"
+fi
+
+
+# Save installed packages to a requirement file (npm install --save)
+pip freeze > requirements.txt
+
+
+# Commands
+mkvirtualenv (create a new virtualenv)
+rmvirtualenv (remove an existing virtualenv)
+workon (change the current virtualenv)
+add2virtualenv (add external packages in a .pth file to current virtualenv)
+cdsitepackages (cd into the site-packages directory of current virtualenv)
+cdvirtualenv (cd into the root of the current virtualenv)
+deactivate (deactivate virtualenv, which calls several hooks)
+
+# Install requirement packages from file
+pip install -r requirements.txt
+

@@ -1,0 +1,57 @@
+# Using AVR GCC to build C code for Arduino Uno, flash using avrdude via USB keeping Arduino Bootloader intact
+# Code in C with AVR includes -> Build using avr-gcc -> Link AVR sys lib -> convert objects to HEX using -> flash using avrdude
+
+# LINKS :
+https://balau82.wordpress.com/2011/03/29/programming-arduino-uno-in-pure-c
+https://typeunsafe.wordpress.com/2011/07/22/programming-arduino-with-avrdude
+
+#------------------------------- LED Blinking -------------------------------#
+# Digital Pin 13 of Arduino is mapped to PB5 of Atmega328p
+# AVR GCC includes macros for various bitwise operations
+
+
+#include <avr/io.h>
+#include <util/delay.h>
+
+#define BLINK_DELAY_MS 1000
+
+int main (void)
+{
+	/* set pin 5 of PORTB for output*/
+	DDRB |= _BV(DDB5);
+
+	while (1) {
+		/* set pin 5 high to turn led on */
+		PORTB |= _BV(PORTB5);
+		_delay_ms(BLINK_DELAY_MS);
+
+		/* set pin 5 low to turn led off */
+		PORTB &= ~_BV(PORTB5);
+		_delay_ms(BLINK_DELAY_MS);
+	}
+}
+
+#------------------------------- Building & Flashing -------------------------------#
+# Arduino is 16 MHz Clock Atmega328p
+# Build C files to objects 
+avr-gcc -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -o led.o led.c
+
+# Link objects with AVR system libraries
+avr-gcc -mmcu=atmega328p led.o -o led
+
+# Convert objects to Intel HEX
+avr-objcopy -O ihex -R .eeprom led led.hex
+
+# Look at /Applications/Arduino.app/Contents/Java/hardware/arduino/avr/boards.txt for flags
+avrdude -F -V -c arduino -p ATMEGA328P -P /dev/tty.usbmodem14231 -b 115200 -D -U flash:w:led.hex:i
+
+#------------------------------- Misc -------------------------------#
+# Disassemble ELF 
+avr-objdump -d led >led.lst
+
+# Backup existing HEX from Arduino
+$ avrdude -F -V -c arduino -p ATMEGA328P -P /dev/tty.usbmodem14231 -b 115200 -U flash:r:flash_backup.hex:i
+
+# Creates assembler code 
+avr-gcc -save-temps -DF_CPU=16000000UL -mmcu=atmega328p -Os -c -o led.o led.c
+

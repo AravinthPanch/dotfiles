@@ -1,0 +1,82 @@
+# Install a receipe locally
+chef-apply hello.rb
+
+
+# Receipe with file action
+file 'motd' do
+  action :delete
+end
+
+
+# Receipe with Package installation
+package 'apache2'
+
+
+# Receipe with Service actions
+service 'apache2' do
+  action [:start, :enable]
+end
+
+
+# Receipe with html content
+
+file '/var/www/html/index.html' do
+  content '<html>
+  <body>
+    <h1>hello world</h1>
+  </body>
+</html>'
+end
+
+
+# Receipe with permissions
+file '/etc/motd' do
+  action :create
+  mode '0755'
+  group 'root'
+  owner 'root'
+end
+
+
+# Generate a chef cookbook
+chef generate cookbook learn_chef_apache2
+
+
+# Generate a template for chef cookbook
+chef generate template learn_chef_apache2 index.html
+
+
+# Cookbook with template
+package 'apache2'
+service 'apache2' do
+  action [:start, :enable]
+end
+template '/var/www/html/index.html' do
+  source 'index.html.erb'
+end
+
+
+# Run a cookbook locally
+sudo chef-client --local-mode --runlist 'recipe[learn_chef_apache2]'
+
+
+# Download a cookbook from Chef Supermarket
+knife cookbook site download learn_chef_apache2
+
+
+# Upload a cookbook from local machine to Chef Server
+knife cookbook upload learn_chef_apache2
+
+
+# Install Chef-Client by bootstrapping a server
+knife bootstrap uvo1n16nm4peatigues.vm.cld.sr --ssh-user sysadmin --ssh-password Yx8x57lc4n --sudo --use-sudo-password --node-name node1 --run-list 'recipe[learn_chef_apache2]'
+
+# Bootstrap a node with ssh key
+knife bootstrap ec2-52-16-71-87.eu-west-1.compute.amazonaws.com --ssh-user ubuntu -i ~/.ssh/tellm_backend.pem --sudo --run-list 'recipe[learn_chef_apache2]'
+
+
+# Run the chef-client on the node manually after uploading cookbook to the chef server
+knife ssh uvo1n16nm4peatigues.vm.cld.sr 'sudo chef-client' --manual-list --ssh-user sysadmin --ssh-password Yx8x57lc4n
+
+
+

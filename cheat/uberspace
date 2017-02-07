@@ -1,0 +1,8 @@
+# To add a password to the primary email after setup
+- Set a ssh-password in Uberspace interface and it will be the same password for primary email
+
+# To add an existing domain name of webserver
+uberspace-add-domain -d www.aravinth.info -w
+
+# To list all the added domain name of webserver
+uberspace-list-domains -w

@@ -1,0 +1,109 @@
+
+#---------------------- ANGULAR JS ----------------------#
+
+# Init root element of an AngularJS application.
+# Angular js directives are ng-app, ng-init, ng-#. valid HTML directives are data-ng-app
+# Page can have only one ng-app
+<script src="angular.min.js"></script>
+<div ng-app=""></div>
+
+# Init variables/models. if value is string then single quoted, json, arrays, numbers and boolean are as it is
+<div ng-app="" ng-init="nameOfTheModel=value"></div>
+
+# Create a model/variable
+<input ng-model="nameOfTheModel">
+
+# Bind the model to an element
+<p ng-bind="nameOfTheModel"></p>
+
+# Mustache Expression. js operations are valid inside expression except control sequences and exceptions
+<p>Expression: {{ 5 + 5 }}</p>
+<p>Value of the model: {{nameOfTheModel}}</p>
+
+# Definition of app and controller
+<div ng-app="myApp" ng-controller="myCtrl">
+
+# When ng-app is defined, module and controller must be registered
+<script>
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope) {
+    $scope.nameOfTheModel= "John";
+});
+</script>
+
+# Basic template
+<div ng-app="myApp" ng-controller="myCtrl">
+    <input type="text" ng-model="myModel">
+    <p ng-bind="myModel"></p>
+    <p>Expression : {{ myModel }}</p>
+</div>
+<script>
+    var app = angular.module('myApp',[]);
+    app.controller('myCtrl', function($scope){
+        $scope.myModel="Hola"
+    });
+</script>
+
+# Loops or repeat
+<div ng-app="" ng-init="names=['Jani','Hege','Kai']">
+  <ul>
+    <li ng-repeat="x in names">
+      {{ x }}
+    </li>
+  </ul>
+</div>
+
+# Controller methods
+<p> Expression {{ nameOfControllerMethod() }} </p>
+app.controller('myCtrl', function($scope){
+    $scope.nameOfControllerMethod = function(){
+        return (5+5);
+    }
+})
+
+# Filters to transform data. | is used as filter
+<p>Name : {{ nameOfTheModel | uppercase }</p>
+<p>Price : {{ nameOfTheModel*5 | currency }</p>
+
+# Filters can be added to values of directives
+<ul>
+  <li ng-repeat="x in names | orderBy:'country'">
+    {{ x.name + ', ' + x.country }}
+  </li>
+</ul>
+
+# Angular services. http service for ajax
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope, $http) {
+    $scope.nameOfTheModel= "John";
+});
+
+# Conditional directives
+<table>
+<tr ng-repeat="x in names">
+<td ng-if="$odd" style="background-color:#f1f1f1">{{ x.Name }}</td>
+<td ng-if="$even">{{ x.Name }}</td>
+<td ng-if="$odd" style="background-color:#f1f1f1">{{ x.Country }}</td>
+<td ng-if="$even">{{ x.Country }}</td>
+</tr>
+</table>
+
+# Directives for dom manipulation
+<p ng-init="domModel=true">
+        DOM Manipulation directive to toggle the enable status of html element
+        <button ng-disabled="domModel"> Click Me</button>
+        <input type="checkbox" ng-model="domModel">
+        domModel status : {{domModel}}
+</p>
+
+# Directives for events, click events
+<p ng-init="count=0">
+        <button ng-click="count=count+1">Click</button>
+        Event directives : {{count}}
+</p>
+
+# Include HTML as templates
+ <div class="container">
+   <div ng-include="'myUsers_List.htm'"></div>
+   <div ng-include="'myUsers_Form.htm'"></div>
+ </div>

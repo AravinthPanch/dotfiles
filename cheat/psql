@@ -1,0 +1,35 @@
+# Installation
+brew install postgres
+
+# Iniate a db from installed location
+pg_ctl init -D /usr/local/var/postgres
+
+# Export the environment path
+export PGDATA="/usr/local/var/postgres"
+
+# Start the server with default superuser "aravinth"
+pg_ctl start
+
+# Create an user to access db
+createuser --pwprompt aravinth
+
+# Create a db
+createdb -O aravinth -E utf8 myDB
+
+# List all databases
+psql -l
+
+# Log into db using commandline tool psql
+psql -U aravinth -W myDB
+psql postgresql://smartb:smartb@localhost:5432/smartb_db
+
+# Find out available users
+psql template1 -c '\du'
+
+# Dump data into a file
+pg_dump -U username dbname -f dump.sql 
+pg_dump postgresql://smartb:smartb@postgres000.stg.smartb.loc:5432/smartb -f stg_data.sql
+
+# Restore data
+psql postgresql://smartb:smartb@localhost:5432/smartb_db -f data/stg_data.sql
+

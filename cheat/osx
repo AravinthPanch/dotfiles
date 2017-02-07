@@ -1,0 +1,31 @@
+# Bin Paths
+/opt/local/bin
+/opt/local/sbin
+/usr/local/bin
+/usr/bin
+/usr/sbin
+/sbin
+/bin
+
+# Find all the listening tcp ports
+lsof -nP -iTCP -sTCP:LISTEN
+netstat -lntp tcp
+netstat -lntp udp
+
+# Install Command Line Tools
+xcode-select --instal
+
+# Start Octave-Gui
+octave --force-gui
+
+#ldd replacement
+otool -L executabl
+
+#Elastic search
+elasticsearch --config=/usr/local/opt/elasticsearch/config/elasticsearch.yml
+
+# Git Google drive conflict with Icon files
+find . -type f \( -name "Icon*" ! -name "*.*" \) -delete
+
+# List detailed informations of USB devices
+system_profiler SPUSBDataType

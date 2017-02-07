@@ -1,41 +1,46 @@
-[include]
-  path = ~/.gitconfig.local
-[credential]
-  helper = osxkeychain
+# Sample gitconfig
+#
+
 [hub]
-  protocol = https
+        protocol = https
+[user]
+	name = Aravinth Panchadcharam
+	email = panch.aravinth@gmail.com
+[credential]
+        helper = osxkeychain
 [alias]
-  wtf = !$ZSHDOT/bin/git-wtf
+        co = checkout
+        promote = !$ZSH/bin/git-promote
+        wtf     = !$ZSH/bin/git-wtf
+        rank-contributors = !$ZSH/bin/git-rank-contributors
+        count   = !git shortlog -sn
 [color]
-  diff = auto
-  status = auto
-  branch = auto
-  ui = true
+        diff = auto
+        status = auto
+        branch = auto
+        ui = true
 [core]
-  excludesfile = ~/.gitignore
-  editor = vim
-  pager = diff-so-fancy | less --tabs=4 -RFX
+	excludesfile = /Users/aravinth/.gitignore
+        editor = vim
 [apply]
-  whitespace = nowarn
-[mergetool]
-  keepBackup = false
-[difftool]
-  prompt = false
-[help]
-  autocorrect = 1
-[push]
-  # See `git help config` (search for push.default)
-  # for more information on different options of the below setting.
-  #
-  # Setting to git 2.0 default to suppress warning message
-  default = simple
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
+        whitespace = nowarn
+
 [mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+        cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+        trustExitCode = true
+
+[difftool "sourcetree"]
+	cmd = /Applications/kdiff3.app/Contents/MacOS/kdiff3 \"$LOCAL\" \"$REMOTE\"
+	path = 
+
+[help]
+        autocorrect = 1
+[push]
+        # See `git help config` (search for push.default)
+        # for more information on different options of the below setting.
+        #
+        # Setting to git 2.0 default to suppress warning message
+        default = simple
+[mergetool "sourcetree"]
+	cmd = /Applications/kdiff3.app/Contents/MacOS/kdiff3 \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
 	trustExitCode = true
-[filter "lfs"]
-  smudge = git-lfs smudge %f
-  required = true
-  clean = git-lfs clean %f

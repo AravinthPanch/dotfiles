@@ -1,0 +1,124 @@
+
+#---------------------------------------- CHARACTER -------------------------------------#
+
+# Find character length
+var="aravinth"
+expr length $var
+echo ${#var}
+echo -n $var | wc -c
+echo $var | awk '{ print length }'
+
+
+# Cut portion of a file or string
+cut -d':' -f1 /etc/passwd
+->
+root
+daemon
+bin
+
+ls -l | cut -d ' ' -f 1
+->
+drwx------
+drwx------
+drwx------+
+drwx------+
+drwx------+
+
+
+# Replace a character. EgL replace A to B
+echo A | tr A B
+
+# Find pathname and filename from a given directory
+dirname /usr/bin/abc.sh -> /usr/bin
+basename /usr/bin/abc.sh -> abc.sh
+
+# Find relative path of the script, if the script is called from another location
+echo "dirname $0" > abc.sh
+./maindir/subdr/abc.sh -> maindr/subdr 
+./subdr/abc.sh -> subdr
+
+# Find out the pid of a process from ps aux
+ps aux | grep 'processname'  | grep -v grep | awk '{print $2}'
+
+
+#---------------------------------------- USER ------------------------------------------#
+
+# Add an existing user to a group
+usermod -a -G groupname username
+
+#Create a new user and add it to a existing group
+useradd -G groupname new-username
+
+#---------------------------------------- SYSTEM ----------------------------------------#
+
+# Change hostname permanently on deb
+sudo sysctl kernel.hostname=kibana
+
+#---------------------------------------- Media ----------------------------------------#
+
+# Display images in X11 window. Thumbnail, Montage mode to display many images as one
+feh -t -E 200 -y 200 /img-folder/ 
+
+#---------------------------------------- SYSTEM-INFO -----------------------------------#
+
+# See sysinfo hardware
+sudo lshw -short
+
+# View hard disks, paritiions, block devices
+lsblk
+
+# Check type of disks such as MBR or GPT
+sudo fdisk -l # disk lable : dos is MBR
+
+# Check if package installed
+dpkg -s package-name
+
+#------------------------------ FILE/ FIFO NAMED PIPE -----------------------------------#
+
+mkfifo sock-name
+exec 3<> sock-name
+
+#-------------------------------------------- NETWORK -----------------------------------#
+
+# open listening tcp ports
+netstat -ntpl
+
+# establish tcp connections
+netstat -antup
+
+# public ip
+curl ipecho.net/plain; echo
+
+# Curl Post
+curl -H "Content-Type: application/json" -d '{"username":"xyz","password":"xyz"}' 
+http://localhost:3000/api/login
+
+curl -v --cookie "connect.sid=s%3AKS9RJgl8EadjCH1cxvd4ehQY7jUi_JEz.jdX%2FaoRMQpOPogW2X0ONqh6jxK9fskEaSoDUglJMH3w" 
+http://localhost:9090/v1/adminUsers
+
+curl --header https://api.go-tellm.com/api/v2/
+
+# download all the files from the directory listing of server
+wget -m --no-parent http://example.com/path/to/files/
+
+
+#---------------------------------------- LIBRARY / LINKER -------------------------------#
+http://www.cyberciti.biz/tips/linux-shared-library-management.html
+
+# To monitor the library calls used by a program
+ltrace -S -tt ./abc-exe #trace syscall library
+
+# To view the dependencies or dynamically linked libraries of a library or an executable
+ldd libabc.so
+ldd abc-exe
+
+# To view readable contents of a library
+strings /usr/lib/libstdc++.so.6 | grep GLIBC
+
+# GCC parameters
+http://www.rapidtables.com/code/linux/gcc/gcc-l.htm
+
+
+
+
+

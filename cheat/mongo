@@ -1,0 +1,13 @@
+#------------------------- Mongo Query --------------#
+
+# Find By ID
+db.posts.find({"_id" : ObjectId("544e2f2333b8cfbf7705b905")})
+
+# Remove By ID
+db.posts.remove({"_id" : ObjectId("544e2e1d5b0f72c976b368b1")})
+
+
+#------------------------- Mongo Setting --------------#
+
+# Mongo Shell view more lines
+DBQuery.shellBatchSize = 300

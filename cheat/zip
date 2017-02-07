@@ -1,0 +1,2 @@
+# Zip contents of a directory src to des.zip
+zip -r des.zip src/*

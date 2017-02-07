@@ -2,3 +2,12 @@ syntax on
 
 " Wrap gitcommit file types at the appropriate length
 filetype indent plugin on
+
+" Use colorscheme 
+colorscheme birdsOfParadise
+
+" Enable backspace to delete
+set backspace=2
+
+" Ask VIM to save crontab
+autocmd filetype crontab setlocal nobackup nowritebackup

@@ -1,0 +1,73 @@
+#---------------------------------------- nRF 51/52-------------------------------#
+
+# Install Segger Jlink software pack
+https://www.segger.com/jlink-software.html
+JLinkExe, JLinkSWOViewer, JLinkGDBServer, etc are installed
+
+# Install nRF programming/flashing tools
+brew cask install nrf5x-command-line-tools 
+nrfjprog, mergehex
+
+
+#---------------------------------------- Jlink -------------------------------#
+
+# Start JLink Programmer and check whether its detected
+JlinkEXE
+--> 
+SEGGER J-Link Commander V5.12e (Compiled Apr 29 2016 15:06:49)
+DLL version V5.12e, compiled Apr 29 2016 15:06:43
+
+Connecting to J-Link via USB...O.K.
+Firmware: J-Link Lite-Cortex-M V8 compiled Aug 20 2015 17:57:19
+Hardware version: V8.00
+S/N: 518007152
+License(s): GDB
+VTref = 3.325V
+
+# Connect to the attached device
+J-Link>connect
+Device>NRF51822_XXAA
+Please specify target interface:
+  J) JTAG (Default)
+  S) SWD
+TIF> S
+Speed> 4000 kHz
+
+---> 
+Found SWD-DP with ID 0x0BB11477
+Found Cortex-M0 r0p0, Little endian.
+FPUnit: 4 code (BP) slots and 0 literal slots
+CoreSight components:
+ROMTbl 0 @ F0000000
+ROMTbl 0 [0]: F00FF000, CID: B105100D, PID: 000BB471 ROM Table
+ROMTbl 1 @ E00FF000
+ROMTbl 1 [0]: FFF0F000, CID: B105E00D, PID: 000BB008 SCS
+ROMTbl 1 [1]: FFF02000, CID: B105E00D, PID: 000BB00A DWT
+ROMTbl 1 [2]: FFF03000, CID: B105E00D, PID: 000BB00B FPB
+ROMTbl 0 [1]: 00002000, CID: B105900D, PID: 000BB9A3 ???
+Cortex-M0 identified.
+
+# Show Contents of Processor registers, CPU must be halt to read
+J-Link>Regs
+
+#---------------------------------------- Jlink -------------------------------#
+
+# Flashing only nrf application along with softdevice
+mergehex -m %SOFTDEVICE_NAME% %APP_NAME% -o %MERGE_NAME%
+nrfjprog --recover -f NRF51
+nrfjprog --program %MERGE_NAME% --verify --chiperase -f NRF51
+
+# Flashing only nrf application 
+nrfjprog --program app.hex --verify -f NRF51 -r
+
+# CPU restart
+nrfjprog -f NRF51 -r
+
+# Read CPU registers
+## It will halt the CPU
+nrfjprog -f NRF51 --readregs
+
+# Read a memory location
+## Reading UICR address next 16 bytes
+nrfjprog --memrd 0x10001000 --n 16
+

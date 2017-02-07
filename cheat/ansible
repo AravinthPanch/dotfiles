@@ -1,0 +1,20 @@
+# Reference
+https://serversforhackers.com/an-ansible-tutorial
+
+# Install via Brew
+brew update
+brew install ansible
+
+# Create an inventory file to hold all hosts information
+# 192.168.1.10 server should have ssh enabled and public key of host machine 
+echo "192.168.1.10" > /usr/local/etc/ansible/hosts
+
+# Test ping to remote server
+ansible all -m ping -u username-of-server
+
+# Ping a host from hosts inventory and using private key and username
+ansible ansible-server -m ping -u ubuntu -i hosts --private-key ~/.ssh/jodel-ansible.pem
+
+# Execute an ansible playbook with sudo access
+ansible-playbook -s -u vagrant nginx.yml
+

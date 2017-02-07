@@ -1,0 +1,122 @@
+Install Java 7
+
+sudo add-apt-repository -y ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get -y install oracle-java7-installer
+
+
+Install Elasticsearch
+
+wget -O - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | sudo apt-key add -
+echo 'deb http://packages.elasticsearch.org/elasticsearch/1.4.4/debian stable main' | sudo tee /etc/apt/sources.list.d/elasticsearch.list
+sudo apt-get update
+sudo apt-get -y install elasticsearch=1.4.4
+sudo vi /etc/elasticsearch/elasticsearch.yml
+add this to elasticsearch.yml ===> 'script.disable_dynamic: true' , 'network.host: localhost'
+
+
+Install Kibana
+
+cd ~; wget https://download.elasticsearch.org/kibana/kibana/kibana-3.1.2.tar.gz
+tar xvf kibana-3.1.2.tar.gz
+sudo vi ~/kibana-3.1.2/config.js
+change it to ====> elasticsearch: "http://"+window.location.hostname+":80",
+sudo mkdir -p /var/www/kibana3
+sudo cp -R ~/kibana-3.1.2/* /var/www/kibana3/
+
+
+Install Nginx
+sudo apt-get install nginx
+cd ~; wget https://gist.githubusercontent.com/thisismitch/2205786838a6a5d61f55/raw/f91e06198a7c455925f6e3099e3ea7c186d0b263/nginx.conf
+
+------content---
+#
+# Nginx proxy for Elasticsearch + Kibana
+#
+# In this setup, we are password protecting the saving of dashboards. You may
+# wish to extend the password protection to all paths.
+#
+# Even though these paths are being called as the result of an ajax request, the
+# browser will prompt for a username/password on the first request
+#
+# If you use this, you'll want to point config.js at http://FQDN:80/ instead of
+# http://FQDN:9200
+#
+server {
+  listen                *:80 ;
+
+  server_name           kibana.jodel-app.com;
+  access_log            /var/log/nginx/kibana.jodel-app.com.access.log;
+
+  location / {
+    root  /var/www/kibana3;
+    index  index.html  index.htm;
+    auth_basic "Restricted";
+    auth_basic_user_file /etc/nginx/conf.d/kibana.jodel-app.com.htpasswd;
+  }
+
+  location ~ ^/_aliases$ {
+    proxy_pass http://127.0.0.1:9200;
+    proxy_read_timeout 90;
+  }
+  location ~ ^/.*/_aliases$ {
+    proxy_pass http://127.0.0.1:9200;
+    proxy_read_timeout 90;
+  }
+  location ~ ^/_nodes$ {
+    proxy_pass http://127.0.0.1:9200;
+    proxy_read_timeout 90;
+  }
+  location ~ ^/.*/_search$ {
+    proxy_pass http://127.0.0.1:9200;
+    proxy_read_timeout 90;
+  }
+  location ~ ^/.*/_mapping {
+    proxy_pass http://127.0.0.1:9200;
+    proxy_read_timeout 90;
+  }
+
+  # Password protected end points
+  location ~ ^/kibana-int/dashboard/.*$ {
+    proxy_pass http://127.0.0.1:9200;
+    proxy_read_timeout 90;
+    limit_except GET {
+      proxy_pass http://127.0.0.1:9200;
+      auth_basic "Restricted";
+      auth_basic_user_file /etc/nginx/conf.d/kibana.jodel-app.com.htpasswd;
+    }
+  }
+  location ~ ^/kibana-int/temp.*$ {
+    proxy_pass http://127.0.0.1:9200;
+    proxy_read_timeout 90;
+    limit_except GET {
+      proxy_pass http://127.0.0.1:9200;
+      auth_basic "Restricted";
+      auth_basic_user_file /etc/nginx/conf.d/kibana.jodel-app.com.htpasswd;
+    }
+  }
+}
+----------
+
+
+sudo cp nginx.conf /etc/nginx/sites-available/default
+sudo htpasswd -c /etc/nginx/conf.d/kibana.jodel-app.com.htpasswd jodel-kibana
+
+
+
+Install Logstash
+
+echo 'deb http://packages.elasticsearch.org/logstash/1.4/debian stable main' | sudo tee /etc/apt/sources.list.d/logstash.list
+sudo apt-get install logstash=1.4.2-1-2c0f5a1
+
+
+Generate SSL Certificates
+sudo mkdir -p /etc/pki/tls/certs
+sudo mkdir /etc/pki/tls/private
+cd /etc/pki/tls; sudo openssl req -x509 -batch -nodes -days 3650 -newkey rsa:4096 -keyout private/logstash-forwarder.key -out certs/logstash-forwarder.crt
+
+
+
+sudo vim /etc/jodel/private/logstash-server.crt
+sudo vim /etc/logstash-forwarder
+

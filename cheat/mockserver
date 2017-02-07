@@ -1,0 +1,34 @@
+
+#--- Mockserver - A Record and Replay Webserver ---#
+# It can be used to intercept the request/response of an api
+# Store/Edit the request/response as JSON
+# Send it to Mockserver using a MockServer Client (Nodejs, java, python)
+
+# Record a real api
+mockserver -logLevel INFO -proxyPort 1090
+
+# Replay a real api
+mockserver -logLevel INFO -serverPort 1080
+
+# Set composed/recorded JSON to replay using NodeJs
+var mockServer = require('mockserver-client'),
+  mockServerClient = mockServer.mockServerClient, // MockServer client 
+    proxyClient = mockServer.proxyClient;
+
+mockServerClient("localhost", 5000).mockAnyResponse(
+    {
+        'httpRequest': {
+            'method': 'GET',
+            'path': '/',            
+        },
+        'httpResponse': {
+            'statusCode': 200,
+            'body': JSON.stringify({ name: 'value' })
+        },
+        'times': {
+            'remainingTimes': 1,
+            'unlimited': false
+        }
+    }
+);
+

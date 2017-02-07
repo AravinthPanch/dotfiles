@@ -1,0 +1,21 @@
+
+###--- AWS S3 ---###
+
+# Copy MyFile.txt in current directory to s3://my-bucket/MyFolder
+aws s3 cp MyFile.txt s3://my-bucket/MyFolder/
+
+# Move all .jpg files in s3://my-bucket/MyFolder to ./MyDirectory
+aws s3 mv s3://my-bucket/MyFolder ./MyDirectory --exclude '*' --include '*.jpg' --recursive
+
+# List the contents of my-bucket
+aws s3 ls s3://my-bucket
+
+# List the contents of MyFolder in my-bucket
+aws s3 ls s3://my-bucket/MyFolder
+
+# Delete s3://my-bucket/MyFolder/MyFile.txt
+aws s3 rm s3://my-bucket/MyFolder/MyFile.txt
+
+# Delete s3://my-bucket/MyFolder and all of its contents
+aws s3 rm s3://my-bucket/MyFolder --recursive
+

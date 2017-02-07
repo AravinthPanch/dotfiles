@@ -1,0 +1,26 @@
+
+#--- ARM Emulator using QEMU emulating Versatile Express DevKit usually equipped with ARM Cortex processors ---#
+
+# Install qemu dependencies
+sudo add-apt-repository ppa:linaro-maintainers/tools
+sudo apt-get install linaro-image-tools qemu-user-static qemu-system
+
+# Install cross compile tool, if you wanna develope on a host machine and copy the source to target
+sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+
+# Download a Linaro release and hardware pack
+wget http://releases.linaro.org/platform/linaro-n/nano/alpha-3/linaro-natty-nano-tar-20110302-0.tar.gz 
+wget http://releases.linaro.org/platform/linaro-n/hwpacks/alpha-3/hwpack_linaro-vexpress_20110302-0_armel_supported.tar.gz
+
+# Create the VM disk image
+linaro-media-create --image_file vexpress.img --dev vexpress --binary linaro-natty-nano-tar-20110302-0.tar.gz --hwpack hwpack_linaro-vexpress_20110302-0_armel_supported.tar.gz
+
+# Mount the image to extract few information
+sudo mount -o loop,offset=54525952 -t ext4 vexpress.img /mnt/tmp
+cp /mnt/tmp/boot/vmlinuz-2.6.38-1000-linaro-vexpress . 
+cp /mnt/tmp/boot/initrd.img-2.6.38-1000-linaro-vexpress .
+ln -s vmlinuz-2.6.38-1000-linaro-vexpress vmlinuz
+ln -s initrd.img-2.6.38-1000-linaro-vexpress initrd.img
+
+# Starting QEMU
+qemu-system-arm -M vexpress-a9 -cpu cortex-a9 -kernel ./vmlinuz -initrd ./initrd.img -redir tcp:2200::22 -m 512 -append "root=/dev/mmcblk0p2 vga=normal mem=512M devtmpfs.mount=0 rw" -drive file=vexpress.img,if=sd,cache=writeback

@@ -1,0 +1,2 @@
+# Kill a process by finding its pid 
+sudo ps aux | grep 'python nuimo.py' | grep -v grep | head -1 | $(awk '{print "sudo kill " $2}')

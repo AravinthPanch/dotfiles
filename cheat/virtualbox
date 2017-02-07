@@ -1,0 +1,5 @@
+# Enabling Unity Video acceleration for Ubuntu
+/usr/lib/nux/unity_support_test -p
+
+# Disabling scale mode
+VBoxManage setextradata global GUI/Input/MachineShortcuts "ScaleMode=None"

@@ -1,0 +1,47 @@
+###### Bluetooth ######
+L2CAP is used within the Bluetooth protocol stack. It passes packets to either the Host Controller Interface (HCI) or on a hostless system, 
+###### ###### ######
+
+# Install bluetooth kernel BlueZ library
+sudo apt-get install --no-install-recommends bluetooth
+#-> this installs bluez library (older version) and installs bluetoothctl and bluetoothd
+# bluetoothctl is useful to manage Bluetooth HCI or peripherals
+# bluetoothd is a daemon that should run from startup to use anyother bluetooth tools
+
+# For c,c++ bluetooth development to install header files 
+sudo apt-get install libbluetooth-dev
+
+# Display the available bluetooh device on the system
+hciconfig dev
+
+# Enable Bluetooth
+sudo hciconfig hci0 up
+
+# Disable Bluetooth
+sudo hciconfig hci0 down
+
+# Scan for classic Bluetooth Devices
+sudo hcitool scan
+
+# Scan for BLE Devices
+sudo hcitool lescan
+
+# Connect to the bluetooth
+sudo gatttool -b FA:48:12:00:CA:AC -t random -I
+#-> It goes into the terminal and send AT like commands
+connect
+#-> It says connections successful after few seconds 
+characteristics 
+#-> shows all the characteristics and their UUID
+
+# To list the previously paired peripherals of the adapter
+bluetoothctl devices
+
+# To find version of bluez
+bluetoothd -v
+
+
+
+
+
+

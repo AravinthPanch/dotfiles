@@ -1,0 +1,10 @@
+# Vim setup on .vimrc
+syntax on
+set tabstop=4
+set expandtab
+set softtabstop=4
+set shiftwidth=4
+filetype indent on
+
+# Direct Connection
+dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline rootwait ip=192.168.1.200::192.168.1.1:255.255.255.0:rpi:eth0:off
