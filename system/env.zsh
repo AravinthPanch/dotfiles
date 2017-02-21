@@ -1,7 +1,7 @@
-export EDITOR='atom'
+export EDITOR='vim'
 
-# your code folder that we can `c [tab]` to
-export PROJECTS=~/code
+# OpenNI Development Environment
+#export OPENNI2_INCLUDE=/Users/aravinth/Library/OpenNI2/Include
+#export OPENNI2_REDIST=/Users/aravinth/Library/OpenNI2/Redist
 
-# your dev stuff (books, hello worlds, workspaces) folder that we can `dev [tab]` to
-export DEV=~/dev
+export CHEATCOLORS=true
