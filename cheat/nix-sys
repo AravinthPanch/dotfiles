@@ -1,0 +1,44 @@
+# modify network behaviour
+/proc/sys/net/ipv4/
+
+# Get kernel information
+cat /proc/sys/kernel/hostname
+cat /proc/sys/kernel/domainname
+
+# Get CPU / IO load
+cat /proc/loadavg
+http://blog.scoutapp.com/articles/2009/07/31/understanding-load-averages
+sudo apt-get install htop
+
+# Get memory info
+cat /proc/meminfo
+
+# Root folders which map system/hardware status and configuration
+/proc
+/sys/class
+
+# Get list of users on the system
+lslogins
+
+# Get list of available communication interfaces/busses or pheripherals
+ls /sys/bus
+ls /sys/class
+
+# Get CPU info
+lscpu
+cat /proc/cpuinfo
+
+# Get temperature of CPU
+cat /sys/class/thermal/thermal_zone0/temp
+
+# See sysinfo hardware
+sudo lshw -short
+
+# View hard disks, paritiions, block devices
+lsblk
+
+# Check type of disks such as MBR or GPT
+sudo fdisk -l # disk lable : dos is MBR
+
+# Check if package installed
+dpkg -s package-name

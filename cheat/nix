@@ -59,48 +59,10 @@ sudo sysctl kernel.hostname=kibana
 # Display images in X11 window. Thumbnail, Montage mode to display many images as one
 feh -t -E 200 -y 200 /img-folder/ 
 
-#---------------------------------------- SYSTEM-INFO -----------------------------------#
-
-# See sysinfo hardware
-sudo lshw -short
-
-# View hard disks, paritiions, block devices
-lsblk
-
-# Check type of disks such as MBR or GPT
-sudo fdisk -l # disk lable : dos is MBR
-
-# Check if package installed
-dpkg -s package-name
-
 #------------------------------ FILE/ FIFO NAMED PIPE -----------------------------------#
 
 mkfifo sock-name
 exec 3<> sock-name
-
-#-------------------------------------------- NETWORK -----------------------------------#
-
-# open listening tcp ports
-netstat -ntpl
-
-# establish tcp connections
-netstat -antup
-
-# public ip
-curl ipecho.net/plain; echo
-
-# Curl Post
-curl -H "Content-Type: application/json" -d '{"username":"xyz","password":"xyz"}' 
-http://localhost:3000/api/login
-
-curl -v --cookie "connect.sid=s%3AKS9RJgl8EadjCH1cxvd4ehQY7jUi_JEz.jdX%2FaoRMQpOPogW2X0ONqh6jxK9fskEaSoDUglJMH3w" 
-http://localhost:9090/v1/adminUsers
-
-curl --header https://api.go-tellm.com/api/v2/
-
-# download all the files from the directory listing of server
-wget -m --no-parent http://example.com/path/to/files/
-
 
 #---------------------------------------- LIBRARY / LINKER -------------------------------#
 http://www.cyberciti.biz/tips/linux-shared-library-management.html
