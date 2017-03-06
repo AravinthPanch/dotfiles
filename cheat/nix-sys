@@ -42,3 +42,20 @@ sudo fdisk -l # disk lable : dos is MBR
 
 # Check if package installed
 dpkg -s package-name
+
+# List all the modules loaded by the kernel
+cat /proc/modules
+
+# View details of the kernel module
+modinfo bcmdhd
+
+# Directory where kernel modules are stored
+cd /lib/modules/$(uname -r)/kernel/drivers
+cd /lib/modules/$(uname -r)/kernel/updates # Patched or own drivers
+
+# Change terminal size of TTY which is connected via cable
+# If terminal size is smaller, text will be clipped when connected via screen or picocom
+stty size # shows current size usally 24 80
+stty rows 50
+stty columns 200
+

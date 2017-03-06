@@ -1,3 +1,5 @@
+#---------------------------------------- NIX-NET ----------------------------------------#
+
 # modify network behaviour
 /proc/sys/net/ipv4/
 
@@ -9,6 +11,36 @@ netstat -antup
 
 # get current public ip
 curl ipecho.net/plain; echo
+
+#---------------------------------------- HTTP ----------------------------------------#
+# Curl Post
+curl -H "Content-Type: application/json" -d '{"username":"xyz","password":"xyz"}'
+http://localhost:3000/api/login
+
+curl -v --cookie "connect.sid=s%3AKS9RJgl8EadjCH1cxvd4ehQY7jUi_JEz.jdX%2FaoRMQpOPogW2X0ONqh6jxK9fskEaSoDUglJMH3w"
+http://localhost:9090/v1/adminUsers
+
+curl --header https://api.go-tellm.com/api/v2/
+
+# download all the files from the directory listing of server
+wget -m --no-parent http://example.com/path/to/files/
+
+#---------------------------------------- MacOS ----------------------------------------#
+# airport tool to hack network in MacOS
+/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport
+airport -s #scan for all wifi accesspoints 
+airport -I #check current wifi status
+
+# netstat like 
+nettop
+ 
+# use diagnostic tool to sniff, view network performance and monitor
+1-> open wireless diagnostics application
+2-> keep diagnostics window open and select window from menubar
+3-> select sniff, performance or monitor tools
+
+# to view network status directly at the task bar
+click on wifi icon with Alt key
 
 #---------------------------------------- WIRELESS ----------------------------------------#
 # Links
@@ -51,29 +83,8 @@ iwconfig wlan0 power off
 # signals weaker than this are ignored
 iwconfig wlan0 sens -80
 
-#---------------------------------------- MacOS ----------------------------------------#
-# airport tool to hack network in MacOS
-/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport
-airport -s #scan for all wifi accesspoints 
-airport -I #check current wifi status
-
-# netstat like 
-nettop
- 
-# use diagnostic tool to sniff, view network performance and monitor
-1-> open wireless diagnostics application
-2-> keep diagnostics window open and select window from menubar
-3-> select sniff, performance or monitor tools
-
-#---------------------------------------- HTTP ----------------------------------------#
-# Curl Post
-curl -H "Content-Type: application/json" -d '{"username":"xyz","password":"xyz"}'
-http://localhost:3000/api/login
-
-curl -v --cookie "connect.sid=s%3AKS9RJgl8EadjCH1cxvd4ehQY7jUi_JEz.jdX%2FaoRMQpOPogW2X0ONqh6jxK9fskEaSoDUglJMH3w"
-http://localhost:9090/v1/adminUsers
-
-curl --header https://api.go-tellm.com/api/v2/
-
-# download all the files from the directory listing of server
-wget -m --no-parent http://example.com/path/to/files/
+# find out which driver is used by the wireless adapter
+# list all the modules loaded by the kernel
+cat /proc/modules
+# broadcom driver used by NanoPi
+modinfo bcmdhd

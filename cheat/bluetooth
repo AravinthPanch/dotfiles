@@ -11,6 +11,13 @@ sudo apt-get install --no-install-recommends bluetooth
 # For c,c++ bluetooth development to install header files 
 sudo apt-get install libbluetooth-dev
 
+# Config files of BlueZ
+/etc/bluetooth
+
+# Change bluetooth controller to allow only BLE mode
+/etc/bluetooth/main.conf
+ControllerMode = le
+
 # Display the available bluetooh device on the system
 hciconfig dev
 
@@ -26,13 +33,20 @@ sudo hcitool scan
 # Scan for BLE Devices
 sudo hcitool lescan
 
-# Connect to the bluetooth
+# Reset bluetooth controller
+hciconfig hci0 reset
+
+# Connect to the bluetooth in interactive mode
 sudo gatttool -b FA:48:12:00:CA:AC -t random -I
-#-> It goes into the terminal and send AT like commands
+# to connect to the peripheral
 connect
-#-> It says connections successful after few seconds 
+# to list all the characteristics
 characteristics 
-#-> shows all the characteristics and their UUID
+# handle: 0x002d, char properties: 0x08, char value handle: 0x002e, uuid: f29b152c-cb19-40f3-be5c-7241ecb82fd2
+char-write-req 0x002b 01
+
+# Write to a characteristics without interactive mode and listen to notifications
+gatttool -b F9:8D:BB:F1:15:34 -t random --char-write-req -a 0x002c -n 01 --listen
 
 # To list the previously paired peripherals of the adapter
 bluetoothctl devices
@@ -40,8 +54,72 @@ bluetoothctl devices
 # To find version of bluez
 bluetoothd -v
 
+# Restart bluetooth service
+service bluetooth restart
 
+# View information of BLE peripheral such as Nuimo
+hcitool leinfo --random F9:8D:BB:F1:15:34
 
+# Create a connection to LE periperal
+hcitool lecc --random F9:8D:BB:F1:15:34
 
+# Read RSSI of BLE
+btmon -w rssi.btsnoop # run this is background
+hcitool lescan # run this for the need time of capturing packets and kill
+btmon -r rssi.btsnoop > rssi.log # convert btsnoop to plain text
+grep rssi.log | grep F9:8D:BB:F1:15:34 -A 10 # -A in grep shows 10 lines after the match
+grep rssi.log | grep F9:8D:BB:F1:15:34 -A 10 | grep RSSI # shows all rssi of F9:8D:BB:F1:15:34 in the capture
 
+#### BlueZ utils ####
+# is used to issue BlueCore commands to Cambridge Silicon Radio devices.
+bccmd
+
+# is a Bluemoon configuration utility.
+bluemoon
+
+# is the interactive Bluetooth control program.
+bluetoothctl
+
+# is the Bluetooth daemon.
+bluetoothd
+
+# provides access to the Bluetooth subsystem monitor infrastructure for reading HCI traces.
+btmon
+
+# is used to set up, maintain, and inspect the CIP configuration of the Bluetooth subsystem in the Linux kernel.
+ciptool
+
+# is used to attach a serial UART to the Bluetooth stack as HCI transport interface.
+hciattach
+
+# is used to configure Bluetooth devices.
+hciconfig
+
+# reads raw HCI data coming from and going to a Bluetooth device and prints to screen commands, events and data in a human-readable form.
+hcidump
+
+# is used to configure Bluetooth connections and send some special command to Bluetooth devices.
+# http://manpages.ubuntu.com/manpages/zesty/man1/hcitool.1.html
+hcitool
+
+# is used to convert a file needed by Broadcom devices to hcd (Broadcom bluetooth firmware) format.
+hex2hcd
+
+# is used to send a L2CAP echo request to the Bluetooth MAC address given in dotted hex notation.
+l2ping
+
+# is L2CAP testing program.
+l2test
+
+# is used to test RFCOMM communications on the Bluetooth stack.
+rctest
+
+# is used to set up, maintain, and inspect the RFCOMM configuration of the Bluetooth subsystem in the Linux kernel.
+rfcomm
+
+# is used to perform SDP queries on Bluetooth devices.
+sdptool
+
+# contains the BlueZ 4 API functions.
+libbluetooth.so
 
