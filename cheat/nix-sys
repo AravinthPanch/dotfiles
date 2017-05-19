@@ -1,3 +1,11 @@
+# Find how peripherals are attached (USB or SDIO or SPI) or driver associatedm,etc specs of peripheral
+# For example to find how WiFi Module is attached in RaspberryPi
+# WiFi belongs to a networking class.
+cd /sys/class/net; ls # it will list all networking interfaces
+cd wlan0; ls -l # will list details of peripheral
+cd device; ls -l # points to directory in /sys/bus/**/**
+subsystem -> ../../../../../../../../bus/sdio # shows that it is interfaced via SDIO 
+
 # modify network behaviour
 /proc/sys/net/ipv4/
 
@@ -10,7 +18,7 @@ cat /proc/loadavg
 http://blog.scoutapp.com/articles/2009/07/31/understanding-load-averages
 sudo apt-get install htop
 
-# Get memory info
+# Get RAM info
 cat /proc/meminfo
 
 # Root folders which map system/hardware status and configuration
@@ -59,3 +67,36 @@ stty size # shows current size usally 24 80
 stty rows 50
 stty columns 200
 
+############## USB ##########
+http://unix.stackexchange.com/questions/60078/find-out-which-modules-are-associated-with-a-usb-device
+
+# List all connect usb devices
+lsusb
+lsusb -v # verbose
+
+# List usb devices with attached driver
+lsusb -t
+
+# List all usb devices with bus level and power information
+usb-devices
+
+# usb bus system
+/sys/bus/usb
+/sys/bus/usb/drivers # available usb device drivers
+/sys/bus/usb/devices # devices on usb bus
+
+# Access GPIO via filesystem
+cat /sys/class/gpio/gpiochip0/ngpio # shows number of gpios available on the CPU
+sudo echo 16 > /sys/class/gpio/export # creates a file for gpio pin 16
+sudo echo out > /sys/class/gpio/gpio16/direction # sets pin as output
+sudo echo 1 > /sys/class/gpio/gpio16/value # set high on the pin
+
+# Access on board RPi LED via filesystem
+sudo echo none > /sys/class/led0/trigger # by default status LED is triggered mmc0
+sudo echo 0 > /sys/class/led0/brightness # switches off the led
+sudo echo 255 > /sys/class/led0/brightness # switches on the led
+sudo echo mmc0 > /sys/class/led0/trigger # resets the trigger
+
+# Find SD Card details
+cd /sys/class/mmc_host/mmc?/mmc?:*
+echo "man:$(cat manfid) oem:$(cat oemid) name:$(cat name) hwrev:$(cat hwrev) fwrev:$(cat fwrev)"

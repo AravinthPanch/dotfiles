@@ -1,6 +1,9 @@
 ###### Bluetooth ######
-L2CAP is used within the Bluetooth protocol stack. It passes packets to either the Host Controller Interface (HCI) or on a hostless system, 
-###### ###### ######
+# Find out to which interface bluetooth adapter is attached
+cd /sys/class/bluetooth; ls -l
+# Bluetooth dongle attached on Rpi3 shows these results
+hci0 -> ../../devices/platform/soc/3f980000.usb/usb1/1-1/1-1.2/1-1.2:1.0/bluetooth/hci0 # USB dongle
+hci1 -> ../../devices/platform/soc/3f201000.uart/tty/ttyAMA0/hci1 # UART internal
 
 # Install bluetooth kernel BlueZ library
 sudo apt-get install --no-install-recommends bluetooth
@@ -17,6 +20,7 @@ sudo apt-get install libbluetooth-dev
 # Change bluetooth controller to allow only BLE mode
 /etc/bluetooth/main.conf
 ControllerMode = le
+btmgmt # BlueZ command to directly manipulate bluetooth conf file
 
 # Display the available bluetooh device on the system
 hciconfig dev
@@ -67,8 +71,9 @@ hcitool lecc --random F9:8D:BB:F1:15:34
 btmon -w rssi.btsnoop # run this is background
 hcitool lescan # run this for the need time of capturing packets and kill
 btmon -r rssi.btsnoop > rssi.log # convert btsnoop to plain text
-grep rssi.log | grep F9:8D:BB:F1:15:34 -A 10 # -A in grep shows 10 lines after the match
-grep rssi.log | grep F9:8D:BB:F1:15:34 -A 10 | grep RSSI # shows all rssi of F9:8D:BB:F1:15:34 in the capture
+cat rssi.log | grep F9:8D:BB:F1:15:34 -A 10 # -A in grep shows 10 lines after the match
+cat rssi.log | grep F9:8D:BB:F1:15:34 -A 10 | grep RSSI # shows all rssi of F9:8D:BB:F1:15:34 in the capture
+
 
 #### BlueZ utils ####
 # is used to issue BlueCore commands to Cambridge Silicon Radio devices.
@@ -122,4 +127,19 @@ sdptool
 
 # contains the BlueZ 4 API functions.
 libbluetooth.so
+
+# ------- hcixx tools are deprecated in BlueZ 5.44+, therefore use btmgmt 
+
+# Power on the adapter
+btmgmt power on
+
+# Enable LE
+btmgmt le on
+
+# Scan devices
+btmgmt find
+btmgmt find | grep -B 5 "Nuimo"
+
+
+
 

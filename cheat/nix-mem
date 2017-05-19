@@ -1,0 +1,44 @@
+# Get RAM info
+cat /proc/meminfo
+
+# View available disk partitions
+cat /proc/partitions
+
+# Get IDs and types of Block storages
+sudo blkid
+
+# List block storages, partitions and filesystem type
+# https://www.cyberciti.biz/faq/linux-list-disk-partitions-command/
+df -Th
+sudo lsblk -f
+sudo fdisk -l
+sudo sfdisk -l
+
+# Mount a storage to filesystem
+sudo mount -t vfat /dev/sdb1 /mnt/sdcard1
+
+# Unmount a storage
+sudo umount /dev/sdb1
+
+# Detach a storage 'sdb' after unmounting the volume 'sdb1' 
+# "sudo apt-get install udisks"
+sudo udisks --unmount /dev/sdb1 && udisks --detach /dev/sdb
+
+# Mount a SD card to virtual machine
+# Use USB SD card reader and attach it to the virtual machine 
+# in Virtual Box USB settings
+
+# View sizes of partition table in MBytes
+sudo parted /dev/sdb # opens in interactive mode
+>> unit MB
+>> print 
+
+# Partition block device using parted
+# fdisk, sfdisk are complicated
+sudo parted /dev/sdb # enters into interactive mode
+>> mklabel msdos # create partition table using MBR
+>> mkpart primary fat32 1M 30M # create a primary partition from 1MB to 30MB
+>> mkaprt primart ext4 30 100% # create second partition from 30M to last sector of SD
+>> set 1 boot on # add boot partition label on partition that is created
+>> quit
+sudo mkfs.vfat /dev/sdb1 # convert FAT32 boot to vfat for linux boot

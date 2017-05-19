@@ -71,6 +71,9 @@ iwconfig wlan0 mode monitor
 # scan accesspoint
 iwlist wlan0 scanning essid "senic-sandbox"
 
+# keep scanning for available wifi accesspoints
+watch -n1 "sudo iwlist wlan0 scan | grep ESSID -B 2"
+
 # set different transmit power, if supported by NIC
 iwconfig wlan0 txpower 30mW
 
@@ -88,3 +91,9 @@ iwconfig wlan0 sens -80
 cat /proc/modules
 # broadcom driver used by NanoPi
 modinfo bcmdhd
+
+# if ifconfig or anyother wireless-tools (Debian) is not available, use ip command 
+ip addr show wlan
+
+# Alternative to sudo ifdown wlan0
+ip link set wlan0 down

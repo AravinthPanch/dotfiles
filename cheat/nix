@@ -1,3 +1,6 @@
+# Export Path variable in .bashrc
+export PATH="/path/to/dir:$PATH"
+
 
 #---------------------------------------- CHARACTER -------------------------------------#
 
@@ -42,12 +45,29 @@ ps aux | grep 'processname'  | grep -v grep | awk '{print $2}'
 
 
 #---------------------------------------- USER ------------------------------------------#
+# Create an user with home directory
+adduser username
+
+# Add user to sudo group
+usermod -aG sudo username
+
+# Login to different user
+su - username
+
+# View all the users and groups
+cat /etc/groups
 
 # Add an existing user to a group
 usermod -a -G groupname username
 
 #Create a new user and add it to a existing group
 useradd -G groupname new-username
+
+# Change owner of the file
+chown username filename
+
+# Change group of the file
+chgrp username filename
 
 #---------------------------------------- SYSTEM ----------------------------------------#
 
