@@ -1,5 +1,0 @@
-#!/bin/bash
-# brew install coreutils because date command in OSX doesn't give 
-# millisecond resolution. Therefore gdate has to be installed.
-# coreutils installs various GNU tools with 'g' prefix
-while IFS= read -r line; do echo "$(gdate +"%T.%5N") $line"; done
