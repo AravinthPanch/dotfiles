@@ -100,3 +100,19 @@ sudo echo mmc0 > /sys/class/led0/trigger # resets the trigger
 # Find SD Card details
 cd /sys/class/mmc_host/mmc?/mmc?:*
 echo "man:$(cat manfid) oem:$(cat oemid) name:$(cat name) hwrev:$(cat hwrev) fwrev:$(cat fwrev)"
+
+#https://www.jamescoyle.net/cheat-sheets/791-update-rc-d-cheat-sheet
+# Add an initscript to runlevel
+# 99 -> priority
+# 5 -> runlevel (default run level)
+update-rc.d  script.sh start 99 5 .
+
+# Remove the initscript
+update-rc.d -f script.sh remove 
+
+# Find current runlevel
+runlevel # --> N 5 = means default runlevel is 5
+
+# Find a specific file recursively and delete
+find . -name '.DS_Store' -type f -delete
+

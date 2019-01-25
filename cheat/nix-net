@@ -97,3 +97,13 @@ ip addr show wlan
 
 # Alternative to sudo ifdown wlan0
 ip link set wlan0 down
+
+##################################################
+Wireless Extension (WEXT) is deprecated in mainline kernel
+Therefore iwconfig, iwlist, etc are not useful anymore
+iw becomes one command for everything
+##################################################
+
+# To view supported motdes by the network adapter
+iw list | grep "Supported interface"
+

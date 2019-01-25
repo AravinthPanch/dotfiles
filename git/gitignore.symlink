@@ -21,3 +21,4 @@ node_modules
 newrelic_agent.log
 .sass-cache
 .vagrant
+*-cache.lib

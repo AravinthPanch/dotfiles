@@ -13,7 +13,6 @@
       "language-csharp"
       "language-go"
       "language-less"
-      "language-make"
       "language-mustache"
       "language-objective-c"
       "language-perl"
@@ -26,6 +25,19 @@
       "timecop"
       "language-babel"
     ]
+    ignoredNames: [
+      ".git"
+      ".hg"
+      ".svn"
+      ".DS_Store"
+      "._*"
+      "Thumbs.db"
+      "desktop.ini"
+      ".pioenvs"
+      ".piolibdeps"
+      ".clang_complete"
+      ".gcc-flags.json"
+    ]
     openEmptyEditorOnStart: false
     telemetryConsent: "no"
     themes: [
@@ -34,6 +46,7 @@
     ]
     warnOnLargeFileLimit: 2
   editor:
+    fontSize: 16
     preferredLineLength: 200
     showIndentGuide: true
     showInvisibles: true
@@ -41,6 +54,16 @@
     softWrapAtPreferredLineLength: true
   "exception-reporting":
     userId: "067faffa-37e3-559e-f87c-fb3a0dae0193"
-  "tree-view": {}
+  "file-icons":
+    coloured: false
+  "linter-ui-default":
+    useBusySignal: false
+  "markdown-preview":
+    breakOnSingleNewline: true
+    useGitHubStyle: true
+  "tool-bar":
+    position: "Left"
+  "tree-view":
+    hideIgnoredNames: true
   welcome:
     showOnStartup: false

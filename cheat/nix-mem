@@ -42,3 +42,8 @@ sudo parted /dev/sdb # enters into interactive mode
 >> set 1 boot on # add boot partition label on partition that is created
 >> quit
 sudo mkfs.vfat /dev/sdb1 # convert FAT32 boot to vfat for linux boot
+
+
+# Mount a CD ROM
+mount -t iso9660 /dev/cdrom /mnt/cdrom
+# https://docs.oracle.com/cd/E10926_01/doc/owb.101/b12150/appbcdmount.htm
