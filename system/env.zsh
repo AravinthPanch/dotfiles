@@ -5,3 +5,4 @@ export EDITOR='vim'
 #export OPENNI2_REDIST=/Users/aravinth/Library/OpenNI2/Redist
 
 export CHEATCOLORS=true
+export LANG=en_US
