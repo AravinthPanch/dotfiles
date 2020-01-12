@@ -1,4 +1,11 @@
 "*":
+  "atom-beautify":
+    markdown:
+      default_beautifier: "Tidy Markdown"
+    php: {}
+    python:
+      max_line_length: 120
+  build: {}
   core:
     audioBeep: false
     disabledPackages: [
@@ -16,7 +23,6 @@
       "language-mustache"
       "language-objective-c"
       "language-perl"
-      "language-php"
       "language-property-list"
       "language-toml"
       "link"
@@ -24,6 +30,7 @@
       "notifications"
       "timecop"
       "language-babel"
+      "language-gfm"
     ]
     ignoredNames: [
       ".git"
@@ -46,7 +53,6 @@
     ]
     warnOnLargeFileLimit: 2
   editor:
-    fontSize: 16
     preferredLineLength: 200
     showIndentGuide: true
     showInvisibles: true
@@ -56,14 +62,22 @@
     userId: "067faffa-37e3-559e-f87c-fb3a0dae0193"
   "file-icons":
     coloured: false
+  "formatter-clangformat":
+    c: {}
+    cpp: {}
+    js: {}
   "linter-ui-default":
     useBusySignal: false
   "markdown-preview":
-    breakOnSingleNewline: true
     useGitHubStyle: true
+  "php-cs-fixer": {}
+  "php-fmt":
+    autoAlign: true
+    useSpaceIndentation: true
   "tool-bar":
     position: "Left"
   "tree-view":
     hideIgnoredNames: true
+    hideVcsIgnoredFiles: true
   welcome:
     showOnStartup: false

@@ -1,0 +1,2 @@
+#/bin/bash
+cd /Users/aravinth/local-workspace/araMetrics/ && python araMetrics.py
