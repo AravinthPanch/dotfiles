@@ -1,2 +1,2 @@
 #/bin/bash
-cd /Users/aravinth/local-workspace/araMetrics/ && python araMetrics.py
+cd /Users/aravinth/local-workspace/araMetrics/ && python araMetrics.py $1
