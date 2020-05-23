@@ -8,6 +8,10 @@
   build: {}
   core:
     audioBeep: false
+    customFileTypes:
+      "source.js.jsx": [
+        "js"
+      ]
     disabledPackages: [
       "about"
       "autocomplete-css"
@@ -29,7 +33,6 @@
       "metrics"
       "notifications"
       "timecop"
-      "language-babel"
       "language-gfm"
     ]
     ignoredNames: [
@@ -54,6 +57,7 @@
     warnOnLargeFileLimit: 2
   editor:
     preferredLineLength: 200
+    scrollPastEnd: true
     showIndentGuide: true
     showInvisibles: true
     softWrap: true
@@ -61,7 +65,7 @@
   "exception-reporting":
     userId: "067faffa-37e3-559e-f87c-fb3a0dae0193"
   "file-icons":
-    coloured: false
+    coloured: true
   "formatter-clangformat":
     c: {}
     cpp: {}
