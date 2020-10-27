@@ -6,6 +6,7 @@
 [user]
 	name = Aravinth Panch
 	email = me@aravinth.info
+	signingkey = C8729C8D3DCBAE41
 [credential]
         helper = osxkeychain
 [alias]
@@ -41,8 +42,14 @@
         #
         # Setting to git 2.0 default to suppress warning message
         default = simple
+
 [mergetool "sourcetree"]
 	cmd = /Applications/kdiff3.app/Contents/MacOS/kdiff3 \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
 	trustExitCode = true
+
 [commit]
 	template = /Users/aravinth/.stCommitMsg
+	gpgsign = true
+
+[gpg]
+   program = /usr/local/bin/gpg
