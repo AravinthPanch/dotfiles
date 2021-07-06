@@ -9,8 +9,8 @@
   core:
     audioBeep: false
     customFileTypes:
-      "source.js.jsx": [
-        "js"
+      "source.css": [
+        "qss"
       ]
     disabledPackages: [
       "about"
@@ -56,7 +56,7 @@
     ]
     warnOnLargeFileLimit: 2
   editor:
-    fontSize: 13
+    fontSize: 15
     preferredLineLength: 200
     scrollPastEnd: true
     showIndentGuide: true
