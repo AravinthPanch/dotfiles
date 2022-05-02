@@ -6,3 +6,9 @@ export EDITOR='vim'
 
 export CHEATCOLORS=true
 export LANG=en_US
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# qp/qm tool lib
+export QPC=~/qp/qpc

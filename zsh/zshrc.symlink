@@ -42,12 +42,3 @@ do
 done
 
 unset config_files
-
-export JAVA_HOME=$(/usr/libexec/java_home)
-#export JAVA_HOME="$JAVA_HOME:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/"
-export PATH="$JAVA_HOME/jre/bin:$PATH"
-export PATH="$PATH:/Applications/flutter/bin/"
-
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
