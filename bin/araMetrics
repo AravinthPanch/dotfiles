@@ -1,2 +1,2 @@
 #/bin/bash
-cd /Users/aravinth/local-workspace/-git-repos/araMetrics/arametrics-clockify-google && python arametrics_clockify_google.py $1
+cd /Users/aravinth/local-workspace/1-aravinth/araMetrics/arametrics-clockify-google && python arametrics_clockify_google.py $1
