@@ -16,4 +16,4 @@ alias multi="/Users/aravinth/.dotfiles/python/multi.py $1 $2"
 alias cnUbSr="ssh -p 2223 aravinth@localhost"
 
 # ESP dev environment
-alias get_idf='. $HOME/esp/esp-idf/export.sh'
+alias esp32_env_setup='. $HOME/esp/esp-idf/export.sh'
