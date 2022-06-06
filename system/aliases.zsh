@@ -17,3 +17,6 @@ alias cnUbSr="ssh -p 2223 aravinth@localhost"
 
 # ESP dev environment
 alias esp32_env_setup='. $HOME/esp/esp-idf/export.sh'
+
+# Select modified git files
+alias git-modified='npanelize git ls-files -m'
