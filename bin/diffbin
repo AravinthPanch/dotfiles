@@ -1,0 +1,2 @@
+#/bin/bash
+perl /Users/aravinth/.dotfiles/bin/colorbindiff.pl $1 $2 | less
