@@ -20,3 +20,6 @@ alias esp32_env_setup='. $HOME/esp/esp-idf/export.sh'
 
 # Select modified git files
 alias git-modified='npanelize git ls-files -m'
+
+# default python is python3
+alias python=python3

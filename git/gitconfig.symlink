@@ -6,7 +6,7 @@
 [user]
 	name = Aravinth Panch
 	email = me@aravinth.info
-	signingkey = C8729C8D3DCBAE41
+	signingkey = 21B35C2D1742D08E
 [credential]
         helper = osxkeychain
 [alias]
@@ -51,4 +51,4 @@
 	template = /Users/aravinth/.stCommitMsg
 	gpgsign = true
 [gpg]
-    program = /usr/local/MacGPG2/bin/gpg2
+    program = /opt/homebrew/bin/gpg
