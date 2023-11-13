@@ -5,8 +5,8 @@
         protocol = https
 [user]
 	name = Aravinth Panch
-	email = me@aravinth.info
-	signingkey = 21B35C2D1742D08E
+	email = ara@aracreate.com
+	signingkey = BA44EBDC47DCB908
 [credential]
         helper = osxkeychain
 [alias]
