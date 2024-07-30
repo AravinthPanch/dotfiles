@@ -48,7 +48,6 @@
 	trustExitCode = true
 
 [commit]
-	template = /Users/aravinth/.stCommitMsg
 	gpgsign = true
 [gpg]
     program = /opt/homebrew/bin/gpg

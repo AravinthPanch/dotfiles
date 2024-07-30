@@ -19,4 +19,4 @@ export CPPFLAGS="-I/opt/homebrew/opt/ruby/include"
 export PKG_CONFIG_PATH="/opt/homebrew/opt/ruby/lib/pkgconfig"
 
 #zephyy
-export ZEPHYR_BASE="/Users/aravinth/.zephyrproject/zephyr"
+#export ZEPHYR_BASE="/Users/aravinth/.zephyrproject/zephyr"
