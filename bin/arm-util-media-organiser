@@ -1,0 +1,451 @@
+#!/bin/zsh
+
+# Media Organiser Script
+# Combines: rename by date, remove version tags, move duplicates
+# Usage: ./media-organiser.sh [folder_path]
+
+# Colours for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Colour
+
+# Global variable for target folder
+TARGET_FOLDER=""
+
+# Function to select folder
+select_folder() {
+    echo "\n${CYAN}========================================${NC}"
+    echo "${CYAN}       Select Target Folder${NC}"
+    echo "${CYAN}========================================${NC}"
+    echo ""
+    echo "1) Current directory ($(pwd))"
+    echo "2) Enter custom path"
+    echo "0) Back to main menu"
+    echo ""
+    echo -n "Select an option: "
+    read folder_choice
+    
+    case $folder_choice in
+        1)
+            TARGET_FOLDER="."
+            echo "${GREEN}✓ Using current directory: $(pwd)${NC}"
+            ;;
+        2)
+            echo -n "\nEnter folder path: "
+            read custom_path
+            
+            # Expand ~ to home directory
+            custom_path="${custom_path/#\~/$HOME}"
+            
+            if [[ -d "$custom_path" ]]; then
+                TARGET_FOLDER="$custom_path"
+                echo "${GREEN}✓ Using folder: $TARGET_FOLDER${NC}"
+            else
+                echo "${RED}✗ Folder does not exist!${NC}"
+                TARGET_FOLDER=""
+                return 1
+            fi
+            ;;
+        0)
+            return 1
+            ;;
+        *)
+            echo "${RED}Invalid option!${NC}"
+            return 1
+            ;;
+    esac
+    
+    return 0
+}
+
+# Function to display menu
+show_menu() {
+    echo "\n${BLUE}========================================${NC}"
+    echo "${BLUE}       Media Organiser Script${NC}"
+    echo "${BLUE}========================================${NC}"
+    
+    if [[ -n "$TARGET_FOLDER" ]]; then
+        echo "${GREEN}Current folder: $TARGET_FOLDER${NC}"
+    else
+        echo "${YELLOW}No folder selected${NC}"
+    fi
+    
+    echo ""
+    echo "1) ${GREEN}Preview${NC} - Rename files by date"
+    echo "2) ${RED}Execute${NC} - Rename files by date"
+    echo ""
+    echo "3) ${GREEN}Preview${NC} - Remove version tags"
+    echo "4) ${RED}Execute${NC} - Remove version tags"
+    echo ""
+    echo "5) ${GREEN}Preview${NC} - Move duplicate filenames"
+    echo "6) ${RED}Execute${NC} - Move duplicate filenames"
+    echo ""
+    echo "7) ${YELLOW}Run all previews${NC}"
+    echo "8) ${RED}Execute all actions${NC}"
+    echo ""
+    echo "9) Delete exiftool backup files"
+    echo ""
+    echo "${CYAN}f) Change folder${NC}"
+    echo "0) Exit"
+    echo ""
+}
+
+# Check if folder is selected
+check_folder() {
+    if [[ -z "$TARGET_FOLDER" ]]; then
+        echo "${RED}✗ No folder selected! Please select a folder first.${NC}"
+        return 1
+    fi
+    return 0
+}
+
+# Function 1: Rename files by date (Preview)
+rename_preview() {
+    check_folder || return
+    
+    echo "\n${BLUE}📸 Preview: Renaming files based on creation date...${NC}"
+    echo "===================================================="
+    echo "Target: $TARGET_FOLDER"
+    echo ""
+    
+    local count=0
+    local rename_count=0
+    local global_seq=1
+    
+    # Declare associative array for file type counting
+    declare -A file_types
+    
+    temp_file=$(mktemp)
+    
+    echo "Collecting file metadata..."
+    
+    find "$TARGET_FOLDER" -type f -not -name ".*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        # Count file types
+        ext="${file##*.}"
+        ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+        
+        created=$(mdls -name kMDItemContentCreationDate -raw "$file" 2>/dev/null)
+        if [ -n "$created" ] && [ "$created" != "(null)" ]; then
+            date_part=$(echo "$created" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            if [ -n "$date_part" ]; then
+                echo "$date_part|$file|$ext_lower" >> "$temp_file"
+            fi
+        fi
+    done
+    
+    echo ""
+    echo "${YELLOW}Files to be renamed:${NC}"
+    echo "--------------------"
+    
+    sort "$temp_file" | while IFS='|' read -r date_part file ext_lower; do
+        ((count++))
+        
+        # Count file types
+        if [[ -n "${file_types[$ext_lower]}" ]]; then
+            ((file_types[$ext_lower]++))
+        else
+            file_types[$ext_lower]=1
+        fi
+        
+        dirname=$(dirname "$file")
+        basename=$(basename "$file")
+        
+        new_name="${date_part}-$(printf "%03d" $global_seq).$ext_lower"
+        new_path="$dirname/$new_name"
+        
+        if [ "$file" != "$new_path" ]; then
+            ((rename_count++))
+            echo "${GREEN}[$rename_count]${NC} $basename"
+            echo "    ${CYAN}→${NC} $new_name"
+            echo ""
+        fi
+        
+        ((global_seq++))
+    done
+    
+    # Count file types from temp file for statistics
+    declare -A file_types_stats
+    while IFS='|' read -r date_part file ext_lower; do
+        if [[ -n "${file_types_stats[$ext_lower]}" ]]; then
+            ((file_types_stats[$ext_lower]++))
+        else
+            file_types_stats[$ext_lower]=1
+        fi
+    done < "$temp_file"
+    
+    rm -f "$temp_file"
+    
+    echo "${YELLOW}========================================${NC}"
+    echo "${GREEN}Total files with dates: $count${NC}"
+    echo "${GREEN}Files to rename: $rename_count${NC}"
+    echo "${YELLOW}========================================${NC}"
+    
+    echo ""
+    echo "${CYAN}File Type Statistics:${NC}"
+    echo "--------------------"
+    
+    # Display file type statistics sorted by count
+    for ext in "${(@k)file_types_stats}"; do
+        printf "${GREEN}%-10s${NC} : %d files\n" ".$ext" "${file_types_stats[$ext]}"
+    done | sort -t: -k2 -rn
+    
+    echo "\n${YELLOW}✓ Preview complete! No files were renamed.${NC}"
+}
+
+# Function 2: Rename files by date (Execute)
+rename_execute() {
+    check_folder || return
+    
+    echo "\n${RED}📸 Executing: Renaming files based on creation date...${NC}"
+    echo "====================================================="
+    echo "Target: $TARGET_FOLDER"
+    echo ""
+    
+    local count=0
+    local rename_count=0
+    local global_seq=1
+    
+    # Declare associative array for file type counting
+    declare -A file_types
+    
+    temp_file=$(mktemp)
+    
+    echo "Collecting file metadata..."
+    
+    find "$TARGET_FOLDER" -type f -not -name ".*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        # Count file types
+        ext="${file##*.}"
+        ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+        
+        created=$(mdls -name kMDItemContentCreationDate -raw "$file" 2>/dev/null)
+        if [ -n "$created" ] && [ "$created" != "(null)" ]; then
+            date_part=$(echo "$created" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            if [ -n "$date_part" ]; then
+                echo "$date_part|$file|$ext_lower" >> "$temp_file"
+            fi
+        fi
+    done
+    
+    echo ""
+    echo "${YELLOW}Renaming files...${NC}"
+    echo "-----------------"
+    
+    sort "$temp_file" | while IFS='|' read -r date_part file ext_lower; do
+        ((count++))
+        
+        dirname=$(dirname "$file")
+        basename=$(basename "$file")
+        
+        new_name="${date_part}-$(printf "%03d" $global_seq).$ext_lower"
+        new_path="$dirname/$new_name"
+        
+        if [ "$file" != "$new_path" ]; then
+            mv "$file" "$new_path"
+            ((rename_count++))
+            echo "${GREEN}[$rename_count]${NC} Renamed: $basename → $new_name"
+        fi
+        
+        ((global_seq++))
+    done
+    
+    # Count file types from temp file for statistics
+    declare -A file_types_stats
+    while IFS='|' read -r date_part file ext_lower; do
+        if [[ -n "${file_types_stats[$ext_lower]}" ]]; then
+            ((file_types_stats[$ext_lower]++))
+        else
+            file_types_stats[$ext_lower]=1
+        fi
+    done < "$temp_file"
+    
+    rm -f "$temp_file"
+    
+    echo ""
+    echo "${YELLOW}========================================${NC}"
+    echo "${GREEN}Total files processed: $count${NC}"
+    echo "${GREEN}Files renamed: $rename_count${NC}"
+    echo "${YELLOW}========================================${NC}"
+    
+    echo ""
+    echo "${CYAN}File Type Statistics:${NC}"
+    echo "--------------------"
+    
+    # Display file type statistics sorted by count
+    for ext in "${(@k)file_types_stats}"; do
+        printf "${GREEN}%-10s${NC} : %d files\n" ".$ext" "${file_types_stats[$ext]}"
+    done | sort -t: -k2 -rn
+    
+    echo "\n${GREEN}✓ Done!${NC}"
+}
+
+# Function 3: Remove version tags (Preview)
+remove_tags_preview() {
+    check_folder || return
+    
+    echo "\n${BLUE}🏷️  Preview: Removing version tags...${NC}"
+    echo "====================================="
+    echo "Target: $TARGET_FOLDER"
+    
+    find "$TARGET_FOLDER" -type f -name "*-v[0-9]*.*" -not -name ".*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        newname=$(echo "$file" | sed 's/-v[0-9]*\././')
+        echo "$file --> $newname"
+    done
+    
+    echo "\n${YELLOW}✓ Preview complete! No files were renamed.${NC}"
+}
+
+# Function 4: Remove version tags (Execute)
+remove_tags_execute() {
+    check_folder || return
+    
+    echo "\n${RED}🏷️  Executing: Removing version tags...${NC}"
+    echo "======================================="
+    echo "Target: $TARGET_FOLDER"
+    
+    find "$TARGET_FOLDER" -type f -name "*-v[0-9]*.*" -not -name ".*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        newname=$(echo "$file" | sed 's/-v[0-9]*\././')
+        mv "$file" "$newname"
+        echo "Renamed: $file --> $newname"
+    done
+    
+    echo "\n${GREEN}✓ Done!${NC}"
+}
+
+# Function 5: Move duplicate filenames (Preview)
+move_duplicates_preview() {
+    check_folder || return
+    
+    echo "\n${BLUE}📁 Preview: Moving duplicate filenames...${NC}"
+    echo "========================================="
+    echo "Target: $TARGET_FOLDER"
+    
+    find "$TARGET_FOLDER" -type f -name "* ([0-9])*.*" -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        echo "Would move: $file --> $TARGET_FOLDER/duplicates/"
+    done
+    
+    echo "\n${YELLOW}✓ Preview complete! No files were moved.${NC}"
+}
+
+# Function 6: Move duplicate filenames (Execute)
+move_duplicates_execute() {
+    check_folder || return
+    
+    echo "\n${RED}📁 Executing: Moving duplicate filenames...${NC}"
+    echo "==========================================="
+    echo "Target: $TARGET_FOLDER"
+    
+    # Create duplicates folder in target directory
+    mkdir -p "$TARGET_FOLDER/duplicates"
+    
+    find "$TARGET_FOLDER" -type f -name "* ([0-9])*.*" -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        mv "$file" "$TARGET_FOLDER/duplicates/"
+        echo "Moved: $file"
+    done
+    
+    echo "\n${GREEN}✓ Done! Files moved to $TARGET_FOLDER/duplicates/${NC}"
+}
+
+# Function 7: Run all previews
+run_all_previews() {
+    check_folder || return
+    
+    rename_preview
+    remove_tags_preview
+    move_duplicates_preview
+}
+
+# Function 8: Execute all actions
+execute_all() {
+    check_folder || return
+    
+    echo "\n${RED}⚠️  WARNING: This will execute all actions!${NC}"
+    echo "Target folder: $TARGET_FOLDER"
+    echo "Press Enter to continue or Ctrl+C to cancel..."
+    read
+    
+    rename_execute
+    remove_tags_execute
+    move_duplicates_execute
+    
+    echo "\n${GREEN}✓ All actions completed!${NC}"
+}
+
+# Function 9: Delete backup files
+delete_backups() {
+    check_folder || return
+    
+    echo "\n${YELLOW}Deleting exiftool backup files in $TARGET_FOLDER...${NC}"
+    exiftool -delete_original! -r "$TARGET_FOLDER"
+    echo "${GREEN}✓ Backup files deleted!${NC}"
+}
+
+# Parse command line arguments
+if [[ $# -gt 0 ]]; then
+    # Expand ~ to home directory
+    INPUT_PATH="${1/#\~/$HOME}"
+    
+    if [[ -d "$INPUT_PATH" ]]; then
+        TARGET_FOLDER="$INPUT_PATH"
+        echo "${GREEN}✓ Using folder from parameter: $TARGET_FOLDER${NC}"
+    else
+        echo "${RED}✗ Error: Folder '$INPUT_PATH' does not exist!${NC}"
+        echo "${YELLOW}Usage: $0 [folder_path]${NC}"
+        exit 1
+    fi
+else
+    # No parameter provided, show folder selection
+    echo "${CYAN}Welcome to Media Organiser!${NC}"
+    select_folder
+fi
+
+# Main loop
+while true; do
+    show_menu
+    echo -n "Select an option: "
+    read choice
+    
+    case $choice in
+        1) rename_preview ;;
+        2) rename_execute ;;
+        3) remove_tags_preview ;;
+        4) remove_tags_execute ;;
+        5) move_duplicates_preview ;;
+        6) move_duplicates_execute ;;
+        7) run_all_previews ;;
+        8) execute_all ;;
+        9) delete_backups ;;
+        f|F) select_folder ;;
+        0) echo "\n${GREEN}Goodbye!${NC}"; exit 0 ;;
+        *) echo "\n${RED}Invalid option. Please try again.${NC}" ;;
+    esac
+    
+    echo "\n${YELLOW}Press Enter to continue...${NC}"
+    read
+done
