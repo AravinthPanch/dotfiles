@@ -1,0 +1,2 @@
+#/bin/bash
+cd /Users/aravinth/local-workspace/internal/arm-util-clockify && /usr/local/bin/python3 arm-util-clockify.py $1

@@ -1,2 +1,0 @@
-#/bin/bash
-cd /Users/aravinth/local-workspace/2-internal/arametrics-clockify-google && /usr/local/bin/python3 arametrics_clockify_google.py $1
