@@ -438,20 +438,51 @@ move_duplicates_execute() {
 param_case_preview() {
     check_folder || return
     
-    echo "\n${BLUE}🔤 Preview: Converting filenames to param-case...${NC}"
-    echo "=================================================="
+    echo "\n${BLUE}🔤 Preview: Converting files and folders to param-case...${NC}"
+    echo "==========================================================="
     echo "Target: $TARGET_FOLDER"
     echo ""
     
-    local count=0
-    local rename_count=0
+    local file_count=0
+    local dir_count=0
+    local file_rename_count=0
+    local dir_rename_count=0
     
+    # Process directories first (deepest first)
+    echo "${CYAN}Folders to be renamed:${NC}"
+    echo "----------------------"
+    find "$TARGET_FOLDER" -depth -type d -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r dir; do
+        # Skip if basename starts with dot or is the target folder itself
+        basename=$(basename "$dir")
+        [[ "$basename" == .* ]] && continue
+        [[ "$dir" == "$TARGET_FOLDER" ]] && continue
+        
+        ((dir_count++))
+        
+        parent=$(dirname "$dir")
+        new_dirname=$(to_param_case "$basename")
+        new_path="$parent/$new_dirname"
+        
+        # Only show if there's a change
+        if [ "$dir" != "$new_path" ]; then
+            ((dir_rename_count++))
+            echo "${GREEN}[$dir_rename_count]${NC} $basename/"
+            echo "    ${CYAN}→${NC} $new_dirname/"
+            echo ""
+        fi
+    done
+    
+    echo ""
+    echo "${CYAN}Files to be renamed:${NC}"
+    echo "--------------------"
+    
+    # Process files
     find "$TARGET_FOLDER" -type f -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r file; do
         # Skip if basename starts with dot
         basename=$(basename "$file")
         [[ "$basename" == .* ]] && continue
         
-        ((count++))
+        ((file_count++))
         
         dirname=$(dirname "$file")
         filename="${basename%.*}"
@@ -474,37 +505,101 @@ param_case_preview() {
         
         # Only show if there's a change
         if [ "$file" != "$new_path" ]; then
-            ((rename_count++))
-            echo "${GREEN}[$rename_count]${NC} $basename"
+            ((file_rename_count++))
+            echo "${GREEN}[$file_rename_count]${NC} $basename"
             echo "    ${CYAN}→${NC} $new_name"
             echo ""
         fi
     done
     
     echo "${YELLOW}========================================${NC}"
-    echo "${GREEN}Total files scanned: $count${NC}"
-    echo "${GREEN}Files to rename: $rename_count${NC}"
+    echo "${GREEN}Total folders scanned: $dir_count${NC}"
+    echo "${GREEN}Folders to rename: $dir_rename_count${NC}"
+    echo "${GREEN}Total files scanned: $file_count${NC}"
+    echo "${GREEN}Files to rename: $file_rename_count${NC}"
     echo "${YELLOW}========================================${NC}"
     
-    echo "\n${YELLOW}✓ Preview complete! No files were renamed.${NC}"
+    echo "\n${YELLOW}✓ Preview complete! No files or folders were renamed.${NC}"
 }
 
 # Function 8: Convert to param-case (Execute)
 param_case_execute() {
     check_folder || return
     
-    echo "\n${RED}🔤 Executing: Converting filenames to param-case...${NC}"
-    echo "===================================================="
+    echo "\n${RED}🔤 Executing: Converting files and folders to param-case...${NC}"
+    echo "============================================================="
     echo "Target: $TARGET_FOLDER"
     echo ""
     
-    local count=0
-    local rename_count=0
+    local dir_rename_count=0
+    local file_rename_count=0
     
-    # Create a temporary file to store rename operations
-    temp_file=$(mktemp)
+    # Create temporary files to store rename operations
+    temp_dir_file=$(mktemp)
+    temp_file_file=$(mktemp)
     
-    # First pass: collect all renames
+    # First pass: collect all directory renames (deepest first)
+    find "$TARGET_FOLDER" -depth -type d -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r dir; do
+        # Skip if basename starts with dot or is the target folder itself
+        basename=$(basename "$dir")
+        [[ "$basename" == .* ]] && continue
+        [[ "$dir" == "$TARGET_FOLDER" ]] && continue
+        
+        parent=$(dirname "$dir")
+        new_dirname=$(to_param_case "$basename")
+        new_path="$parent/$new_dirname"
+        
+        # Only add if there's a change
+        if [ "$dir" != "$new_path" ]; then
+            echo "$dir|$new_path" >> "$temp_dir_file"
+        fi
+    done
+    
+    # Count total directories to rename
+    local total_dirs_to_rename=$(wc -l < "$temp_dir_file" | tr -d ' ')
+    
+    if [ "$total_dirs_to_rename" -gt 0 ]; then
+        echo "${YELLOW}Renaming folders...${NC}"
+        echo ""
+        
+        # Rename directories (deepest first to avoid path issues)
+        while IFS='|' read -r old_path new_path; do
+            # Check if target exists and is different (case-insensitive filesystem issue)
+            # Use a temporary name to handle case-only changes
+            if [ -e "$new_path" ]; then
+                # Get the actual basename to compare (case-sensitive)
+                old_basename=$(basename "$old_path")
+                new_basename=$(basename "$new_path")
+                
+                # If only case differs, use a temporary name
+                if [[ "${old_basename:l}" == "${new_basename:l}" ]] && [[ "$old_basename" != "$new_basename" ]]; then
+                    temp_path="${new_path}.tmp_rename_$$"
+                    mv "$old_path" "$temp_path"
+                    mv "$temp_path" "$new_path"
+                else
+                    # Real conflict - add number suffix
+                    parent=$(dirname "$new_path")
+                    basename=$(basename "$new_path")
+                    
+                    counter=1
+                    while [ -e "$parent/${basename}-${counter}" ]; do
+                        ((counter++))
+                    done
+                    new_path="$parent/${basename}-${counter}"
+                    mv "$old_path" "$new_path"
+                fi
+            else
+                mv "$old_path" "$new_path"
+            fi
+            
+            ((dir_rename_count++))
+            draw_progress_bar $dir_rename_count $total_dirs_to_rename
+        done < "$temp_dir_file"
+        
+        echo "\n"
+    fi
+    
+    # Second pass: collect all file renames
     find "$TARGET_FOLDER" -type f -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r file; do
         # Skip if basename starts with dot
         basename=$(basename "$file")
@@ -531,50 +626,73 @@ param_case_execute() {
         
         # Only add if there's a change
         if [ "$file" != "$new_path" ]; then
-            echo "$file|$new_path" >> "$temp_file"
+            echo "$file|$new_path" >> "$temp_file_file"
         fi
     done
     
     # Count total files to rename
-    local total_to_rename=$(wc -l < "$temp_file" | tr -d ' ')
+    local total_files_to_rename=$(wc -l < "$temp_file_file" | tr -d ' ')
     
-    if [ "$total_to_rename" -eq 0 ]; then
-        echo "${YELLOW}No files need to be renamed.${NC}"
-        rm -f "$temp_file"
+    if [ "$total_files_to_rename" -gt 0 ]; then
+        echo "${YELLOW}Renaming files...${NC}"
+        echo ""
+        
+        # Rename files
+        while IFS='|' read -r old_path new_path; do
+            # Check if target exists and is different (case-insensitive filesystem issue)
+            # Use a temporary name to handle case-only changes
+            if [ -e "$new_path" ]; then
+                # Get the actual basename to compare (case-sensitive)
+                old_basename=$(basename "$old_path")
+                new_basename=$(basename "$new_path")
+                
+                # If only case differs, use a temporary name
+                if [[ "${old_basename:l}" == "${new_basename:l}" ]] && [[ "$old_basename" != "$new_basename" ]]; then
+                    temp_path="${new_path}.tmp_rename_$$"
+                    mv "$old_path" "$temp_path"
+                    mv "$temp_path" "$new_path"
+                else
+                    # Real conflict - add number suffix
+                    dirname=$(dirname "$new_path")
+                    basename=$(basename "$new_path")
+                    filename="${basename%.*}"
+                    ext="${basename##*.}"
+                    
+                    counter=1
+                    if [[ "$basename" == *.* ]]; then
+                        while [ -e "$dirname/${filename}-${counter}.${ext}" ]; do
+                            ((counter++))
+                        done
+                        new_path="$dirname/${filename}-${counter}.${ext}"
+                    else
+                        while [ -e "$dirname/${basename}-${counter}" ]; do
+                            ((counter++))
+                        done
+                        new_path="$dirname/${basename}-${counter}"
+                    fi
+                    mv "$old_path" "$new_path"
+                fi
+            else
+                mv "$old_path" "$new_path"
+            fi
+            
+            ((file_rename_count++))
+            draw_progress_bar $file_rename_count $total_files_to_rename
+        done < "$temp_file_file"
+        
+        echo "\n"
+    fi
+    
+    rm -f "$temp_dir_file" "$temp_file_file"
+    
+    if [ "$total_dirs_to_rename" -eq 0 ] && [ "$total_files_to_rename" -eq 0 ]; then
+        echo "${YELLOW}No files or folders need to be renamed.${NC}"
         return
     fi
     
-    echo "Renaming files..."
-    echo ""
-    
-    # Second pass: perform renames
-    while IFS='|' read -r old_path new_path; do
-        ((count++))
-        
-        # Handle potential conflicts by adding a number suffix
-        if [ -e "$new_path" ] && [ "$old_path" != "$new_path" ]; then
-            dirname=$(dirname "$new_path")
-            basename=$(basename "$new_path")
-            filename="${basename%.*}"
-            ext="${basename##*.}"
-            
-            counter=1
-            while [ -e "$dirname/${filename}-${counter}.${ext}" ]; do
-                ((counter++))
-            done
-            new_path="$dirname/${filename}-${counter}.${ext}"
-        fi
-        
-        mv "$old_path" "$new_path"
-        ((rename_count++))
-        draw_progress_bar $rename_count $total_to_rename
-    done < "$temp_file"
-    
-    rm -f "$temp_file"
-    
-    echo "\n"
     echo "${YELLOW}========================================${NC}"
-    echo "${GREEN}Files renamed: $rename_count${NC}"
+    echo "${GREEN}Folders renamed: $dir_rename_count${NC}"
+    echo "${GREEN}Files renamed: $file_rename_count${NC}"
     echo "${YELLOW}========================================${NC}"
     
     echo "\n${GREEN}✓ Done!${NC}"
