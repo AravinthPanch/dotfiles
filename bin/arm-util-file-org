@@ -1,8 +1,8 @@
 #!/bin/zsh
 
-# Media Organiser Script
-# Combines: rename by date, remove version tags, move duplicates
-# Usage: ./media-organiser.sh [folder_path]
+# File Organiser Script
+# Combines: rename by date, remove version tags, move duplicates, param-case conversion
+# Usage: ./arm-util-file-org [folder_path]
 
 # Colours for output
 RED='\033[0;31m'
@@ -64,7 +64,7 @@ select_folder() {
 # Function to display menu
 show_menu() {
     echo "\n${BLUE}========================================${NC}"
-    echo "${BLUE}       Media Organiser Script${NC}"
+    echo "${BLUE}       File Organiser Script${NC}"
     echo "${BLUE}========================================${NC}"
     
     if [[ -n "$TARGET_FOLDER" ]]; then
@@ -83,10 +83,13 @@ show_menu() {
     echo "5) ${GREEN}Preview${NC} - Move duplicate filenames"
     echo "6) ${RED}Execute${NC} - Move duplicate filenames"
     echo ""
-    echo "7) ${YELLOW}Run all previews${NC}"
-    echo "8) ${RED}Execute all actions${NC}"
+    echo "7) ${GREEN}Preview${NC} - Convert to param-case"
+    echo "8) ${RED}Execute${NC} - Convert to param-case"
     echo ""
-    echo "9) Delete exiftool backup files"
+    echo "9) ${YELLOW}Run all previews${NC}"
+    echo "a) ${RED}Execute all actions${NC}"
+    echo ""
+    echo "d) Delete exiftool backup files"
     echo ""
     echo "${CYAN}f) Change folder${NC}"
     echo "0) Exit"
@@ -100,6 +103,41 @@ check_folder() {
         return 1
     fi
     return 0
+}
+
+# Function to draw progress bar
+draw_progress_bar() {
+    local current=$1
+    local total=$2
+    local width=50
+    local percentage=$((current * 100 / total))
+    local filled=$((width * current / total))
+    local empty=$((width - filled))
+    
+    printf "\r${CYAN}Progress: [${NC}"
+    printf "%${filled}s" | tr ' ' '█'
+    printf "%${empty}s" | tr ' ' '░'
+    printf "${CYAN}] ${GREEN}%d/%d${NC} (${YELLOW}%d%%${NC})" "$current" "$total" "$percentage"
+}
+
+# Function to convert string to param-case
+to_param_case() {
+    local input="$1"
+    local output=""
+    
+    # Remove leading/trailing spaces
+    input=$(echo "$input" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    
+    # Convert to lowercase and replace spaces, underscores with hyphens
+    output=$(echo "$input" | tr '[:upper:]' '[:lower:]' | sed 's/[_ ]/-/g')
+    
+    # Remove multiple consecutive hyphens
+    output=$(echo "$output" | sed 's/-\+/-/g')
+    
+    # Remove leading/trailing hyphens
+    output=$(echo "$output" | sed 's/^-//;s/-$//')
+    
+    echo "$output"
 }
 
 # Function 1: Rename files by date (Preview)
@@ -121,11 +159,20 @@ rename_preview() {
     temp_file=$(mktemp)
     
     echo "Collecting file metadata..."
+    echo ""
     
+    # First pass: count total files
+    local total_files=$(find "$TARGET_FOLDER" -type f -not -name ".*" | wc -l | tr -d ' ')
+    local processed=0
+    
+    # Second pass: collect metadata with progress
     find "$TARGET_FOLDER" -type f -not -name ".*" | while IFS= read -r file; do
         # Skip if basename starts with dot
         basename=$(basename "$file")
         [[ "$basename" == .* ]] && continue
+        
+        ((processed++))
+        draw_progress_bar $processed $total_files
         
         # Count file types
         ext="${file##*.}"
@@ -140,7 +187,7 @@ rename_preview() {
         fi
     done
     
-    echo ""
+    echo "\n"
     echo "${YELLOW}Files to be renamed:${NC}"
     echo "--------------------"
     
@@ -218,11 +265,20 @@ rename_execute() {
     temp_file=$(mktemp)
     
     echo "Collecting file metadata..."
+    echo ""
     
+    # First pass: count total files
+    local total_files=$(find "$TARGET_FOLDER" -type f -not -name ".*" | wc -l | tr -d ' ')
+    local processed=0
+    
+    # Second pass: collect metadata with progress
     find "$TARGET_FOLDER" -type f -not -name ".*" | while IFS= read -r file; do
         # Skip if basename starts with dot
         basename=$(basename "$file")
         [[ "$basename" == .* ]] && continue
+        
+        ((processed++))
+        draw_progress_bar $processed $total_files
         
         # Count file types
         ext="${file##*.}"
@@ -237,9 +293,14 @@ rename_execute() {
         fi
     done
     
-    echo ""
+    echo "\n"
     echo "${YELLOW}Renaming files...${NC}"
     echo "-----------------"
+    echo ""
+    
+    # Count total files to rename
+    local total_to_rename=$(wc -l < "$temp_file" | tr -d ' ')
+    local renamed=0
     
     sort "$temp_file" | while IFS='|' read -r date_part file ext_lower; do
         ((count++))
@@ -253,7 +314,8 @@ rename_execute() {
         if [ "$file" != "$new_path" ]; then
             mv "$file" "$new_path"
             ((rename_count++))
-            echo "${GREEN}[$rename_count]${NC} Renamed: $basename → $new_name"
+            ((renamed++))
+            draw_progress_bar $renamed $total_to_rename
         fi
         
         ((global_seq++))
@@ -271,7 +333,7 @@ rename_execute() {
     
     rm -f "$temp_file"
     
-    echo ""
+    echo "\n"
     echo "${YELLOW}========================================${NC}"
     echo "${GREEN}Total files processed: $count${NC}"
     echo "${GREEN}Files renamed: $rename_count${NC}"
@@ -372,16 +434,163 @@ move_duplicates_execute() {
     echo "\n${GREEN}✓ Done! Files moved to $TARGET_FOLDER/duplicates/${NC}"
 }
 
-# Function 7: Run all previews
+# Function 7: Convert to param-case (Preview)
+param_case_preview() {
+    check_folder || return
+    
+    echo "\n${BLUE}🔤 Preview: Converting filenames to param-case...${NC}"
+    echo "=================================================="
+    echo "Target: $TARGET_FOLDER"
+    echo ""
+    
+    local count=0
+    local rename_count=0
+    
+    find "$TARGET_FOLDER" -type f -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        ((count++))
+        
+        dirname=$(dirname "$file")
+        filename="${basename%.*}"
+        ext="${basename##*.}"
+        
+        # Convert extension to lowercase
+        ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+        
+        # Convert filename to param-case
+        new_filename=$(to_param_case "$filename")
+        
+        # Construct new path
+        if [[ "$basename" == *.* ]]; then
+            new_name="${new_filename}.${ext_lower}"
+        else
+            new_name="${new_filename}"
+        fi
+        
+        new_path="$dirname/$new_name"
+        
+        # Only show if there's a change
+        if [ "$file" != "$new_path" ]; then
+            ((rename_count++))
+            echo "${GREEN}[$rename_count]${NC} $basename"
+            echo "    ${CYAN}→${NC} $new_name"
+            echo ""
+        fi
+    done
+    
+    echo "${YELLOW}========================================${NC}"
+    echo "${GREEN}Total files scanned: $count${NC}"
+    echo "${GREEN}Files to rename: $rename_count${NC}"
+    echo "${YELLOW}========================================${NC}"
+    
+    echo "\n${YELLOW}✓ Preview complete! No files were renamed.${NC}"
+}
+
+# Function 8: Convert to param-case (Execute)
+param_case_execute() {
+    check_folder || return
+    
+    echo "\n${RED}🔤 Executing: Converting filenames to param-case...${NC}"
+    echo "===================================================="
+    echo "Target: $TARGET_FOLDER"
+    echo ""
+    
+    local count=0
+    local rename_count=0
+    
+    # Create a temporary file to store rename operations
+    temp_file=$(mktemp)
+    
+    # First pass: collect all renames
+    find "$TARGET_FOLDER" -type f -not -name ".*" ! -path "*/duplicates/*" | while IFS= read -r file; do
+        # Skip if basename starts with dot
+        basename=$(basename "$file")
+        [[ "$basename" == .* ]] && continue
+        
+        dirname=$(dirname "$file")
+        filename="${basename%.*}"
+        ext="${basename##*.}"
+        
+        # Convert extension to lowercase
+        ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+        
+        # Convert filename to param-case
+        new_filename=$(to_param_case "$filename")
+        
+        # Construct new path
+        if [[ "$basename" == *.* ]]; then
+            new_name="${new_filename}.${ext_lower}"
+        else
+            new_name="${new_filename}"
+        fi
+        
+        new_path="$dirname/$new_name"
+        
+        # Only add if there's a change
+        if [ "$file" != "$new_path" ]; then
+            echo "$file|$new_path" >> "$temp_file"
+        fi
+    done
+    
+    # Count total files to rename
+    local total_to_rename=$(wc -l < "$temp_file" | tr -d ' ')
+    
+    if [ "$total_to_rename" -eq 0 ]; then
+        echo "${YELLOW}No files need to be renamed.${NC}"
+        rm -f "$temp_file"
+        return
+    fi
+    
+    echo "Renaming files..."
+    echo ""
+    
+    # Second pass: perform renames
+    while IFS='|' read -r old_path new_path; do
+        ((count++))
+        
+        # Handle potential conflicts by adding a number suffix
+        if [ -e "$new_path" ] && [ "$old_path" != "$new_path" ]; then
+            dirname=$(dirname "$new_path")
+            basename=$(basename "$new_path")
+            filename="${basename%.*}"
+            ext="${basename##*.}"
+            
+            counter=1
+            while [ -e "$dirname/${filename}-${counter}.${ext}" ]; do
+                ((counter++))
+            done
+            new_path="$dirname/${filename}-${counter}.${ext}"
+        fi
+        
+        mv "$old_path" "$new_path"
+        ((rename_count++))
+        draw_progress_bar $rename_count $total_to_rename
+    done < "$temp_file"
+    
+    rm -f "$temp_file"
+    
+    echo "\n"
+    echo "${YELLOW}========================================${NC}"
+    echo "${GREEN}Files renamed: $rename_count${NC}"
+    echo "${YELLOW}========================================${NC}"
+    
+    echo "\n${GREEN}✓ Done!${NC}"
+}
+
+# Function 9: Run all previews
 run_all_previews() {
     check_folder || return
     
     rename_preview
     remove_tags_preview
     move_duplicates_preview
+    param_case_preview
 }
 
-# Function 8: Execute all actions
+# Function 10: Execute all actions
 execute_all() {
     check_folder || return
     
@@ -393,11 +602,12 @@ execute_all() {
     rename_execute
     remove_tags_execute
     move_duplicates_execute
+    param_case_execute
     
     echo "\n${GREEN}✓ All actions completed!${NC}"
 }
 
-# Function 9: Delete backup files
+# Function 11: Delete backup files
 delete_backups() {
     check_folder || return
     
@@ -421,7 +631,7 @@ if [[ $# -gt 0 ]]; then
     fi
 else
     # No parameter provided, show folder selection
-    echo "${CYAN}Welcome to Media Organiser!${NC}"
+    echo "${CYAN}Welcome to File Organiser!${NC}"
     select_folder
 fi
 
@@ -438,9 +648,11 @@ while true; do
         4) remove_tags_execute ;;
         5) move_duplicates_preview ;;
         6) move_duplicates_execute ;;
-        7) run_all_previews ;;
-        8) execute_all ;;
-        9) delete_backups ;;
+        7) param_case_preview ;;
+        8) param_case_execute ;;
+        9) run_all_previews ;;
+        a|A) execute_all ;;
+        d|D) delete_backups ;;
         f|F) select_folder ;;
         0) echo "\n${GREEN}Goodbye!${NC}"; exit 0 ;;
         *) echo "\n${RED}Invalid option. Please try again.${NC}" ;;
